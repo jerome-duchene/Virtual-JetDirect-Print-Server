@@ -1,5 +1,6 @@
 # Virtual-JetDirect-Print-Server
 Create a virtual print server compatible with JetDirect and HP PJL command
+Based on the RawPrintServer project found on Sourceforge.net
 
 Language: C#
 Version: .Net Framework 4.5.2
@@ -22,6 +23,7 @@ Edit VirtualJetDirectServer.exe.config to change parameters:
 - ServerPort: TCP port to use for the server (default: 9100)
 
 Status:
+
 For the moment, I manage the commands: @PJL INFO STATUS, @PJL JOB, @PJL EOJ.
 For job forwarding, the job name has taken in @PJL SET JOBNAME or @PJL JOB NAME if exists.
 Tested with an equipment that can print on a postscript network printer and by configuring a raw printer under Windows 10 desktop.
