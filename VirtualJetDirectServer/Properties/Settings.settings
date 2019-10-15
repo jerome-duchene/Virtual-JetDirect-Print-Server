@@ -1,0 +1,18 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="VirtualJetDirectServer.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="PrinterName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">\\pcgaltst\NuGenesis_Print_Queue_v80</Value>
+    </Setting>
+    <Setting Name="ServerPort" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">9100</Value>
+    </Setting>
+    <Setting Name="LogFile" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\Dev\logs\RawPrintServer.log</Value>
+    </Setting>
+    <Setting Name="OutputDir" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">c:\Temp\RawPrintServer</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
