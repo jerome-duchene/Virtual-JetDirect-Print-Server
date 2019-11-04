@@ -33,14 +33,15 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 
-[assembly: AssemblyVersion("0.1.0.*")]
+[assembly: AssemblyVersion("0.1.1.*")]
 #if DEBUG
-[assembly: AssemblyInformationalVersion("0.1.0 Beta")]
+[assembly: AssemblyInformationalVersion("0.1.1 Beta")]
 #else
-[assembly: AssemblyInformationalVersion("0.1.0 RC")]
+[assembly: AssemblyInformationalVersion("0.1.1 RC")]
 #endif
 /*
  * Version  Date        Who                     Comment
  * ---------------------------------------------------------------------------------------------------------------------
  * 0.1.0                Jérôme Duchêne          First release: upgrade of the project RawPrintServer 1.0.0 made in C++
+ * 0.1.1    04Nov2019   Jérôme DUchêne          Bug: windows service still in starting mode, embedded OnStart code in a new thread
  */
