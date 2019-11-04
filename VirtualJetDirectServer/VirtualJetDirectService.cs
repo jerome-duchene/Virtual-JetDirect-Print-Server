@@ -35,8 +35,9 @@ namespace VirtualJetDirectServer
         {
             try
             {
-                _printServer.Start();
-                _log.Info("[Service] Starting print server");
+                Thread srv = new Thread(new ThreadStart(_printServer.Start));
+                srv.Start();
+               _log.Info("[Service] Starting print server");
             }
             catch (Exception ex)
             {
