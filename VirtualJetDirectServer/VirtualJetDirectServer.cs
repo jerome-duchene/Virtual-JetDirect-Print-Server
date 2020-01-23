@@ -20,6 +20,7 @@ namespace VirtualJetDirectServer
         #region Public event declaration
         public delegate void DelegateJobReceived(StringBuilder document);
         public event DelegateJobReceived OnNewJob;
+        public event DelegateJobReceived OnClientDisconnected;
         #endregion
 
         #region Ctor
@@ -85,8 +86,7 @@ namespace VirtualJetDirectServer
             StateObject state = new StateObject();
             state.WorkSocket = handler;
             // Start receiving data
-            handler.BeginReceive(state.Buffer, 0, StateObject.BufferSize, 0,
-                new AsyncCallback(ReadPrintJob), state);
+            handler.BeginReceive(state.Buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReadPrintJob), state);
         }
 
         private void ReadPrintJob(IAsyncResult ar)
@@ -110,28 +110,23 @@ namespace VirtualJetDirectServer
 
             _log.Trace($"Data readed ({bytesRead} bytes): {Encoding.ASCII.GetString(state.Buffer, 0, bytesRead)}");
 
-            if(state.StartReceivingData)
-                // we previously received the command that indicate a new print job 
-                // append these data until receiving end of job (EOJ) command
-                state.Data.Append(Encoding.ASCII.GetString(state.Buffer, 0, state.Buffer.Length));
+            string dataReceived = Encoding.ASCII.GetString(state.Buffer, 0, bytesRead);
+            state.Data.Append(dataReceived);
 
             // check command if reading must continue
-            if (!CheckCommand(state)) return;
-
-            // client is disconnected
-            if (!handler.Connected) return;
+            if (!ParseData(state)) return;
 
             // Not all data received. Get more.  
             try
             {
-                handler.BeginReceive(state.Buffer, 0, StateObject.BufferSize, 0,
-                    new AsyncCallback(ReadPrintJob), state);
+                if (!handler.Connected) throw new SocketException(); // client is disconnected
+                handler.BeginReceive(state.Buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReadPrintJob), state);
             }
             catch(SocketException)
             {
                 // client have closed his connection, end of print
                 _log.Info("Client connection closed");
-                OnNewJob?.Invoke(state.Data);
+                OnClientDisconnected?.Invoke(state.Data);
                 return; 
             }
             catch(Exception ex)
@@ -140,40 +135,43 @@ namespace VirtualJetDirectServer
             }
         }
 
-        private bool CheckCommand(StateObject state)
+        private bool ParseData(StateObject state)
         {
             /* 
              * Check the content for PJL command:
-             * <ESC>%-12345X@PJL INFO STATUS > return an ack like @PJL INFO STATUS CODE=10001 ONLINE=TRUE
-             * <ESC>%-12345X@PJL JOB ... > RAW data to print until receive @PJL EOJ or socket closed
-             * <ESC>%-12345X@PJL EOJ > no more data to print
+             * <ESC>%-12345X@PJL INFO STATUS    -> return an ack like @PJL INFO STATUS CODE=10001 ONLINE=TRUE
+             * <ESC>%-12345X@PJL JOB ...        -> RAW data to print until receive @PJL EOJ or socket closed
+             * <ESC>%-12345X@PJL EOJ            -> no more data to print
              * 
-             * Update 20200123: removing check on <ESC>%-12345X because this information can be received on 2 differents buffer
+             * Update 20200123: a command can be split over multiple buffer, search for command in all data
              */
-            string currentContent = Encoding.ASCII.GetString(state.Buffer, 0, state.Buffer.Length);
-            if (!currentContent.Contains("@PJL")) return true; // no JPL command
-            if (currentContent.Contains("@PJL JOB")) // print job
+            int lastCommandPosition = state.Data.ToString().LastIndexOf("\u001B%-12345X@PJL");
+            if (lastCommandPosition == -1) return true; // no JPL command found
+
+            string commandData = state.Data.ToString().Substring(lastCommandPosition);
+             if (commandData.Contains("@PJL JOB")) // print job
             {
-                state.Data = new StringBuilder(); // clear data
-                state.Data.Append(Encoding.ASCII.GetString(state.Buffer, 0, state.Buffer.Length)); // add data
-                state.StartReceivingData = true;
-                return true; // print job
+                state.Data = new StringBuilder(commandData); // clear data and add only significant data
+                return true; // continue
             }
-            if (currentContent.Contains("@PJL INFO STATUS")) // info request
+            if (commandData.Contains("@PJL INFO STATUS")) // info request
             {
                 _log.Info("Received a status request, send OK status");
                 Send(state.WorkSocket, "@PJL INFO STATUS CODE=10001 ONLINE=TRUE");
+                state.Data = new StringBuilder(); // clear data
                 return true; 
             }
-            if (currentContent.Contains("@PJL EOJ"))
+            if (commandData.Contains("@PJL EOJ"))
             {
                 // end of print
                 _log.Info("End of Job");
                 OnNewJob?.Invoke(state.Data);
+                state.Data = new StringBuilder(); // clear data
                 return false; 
             }
 
-            throw new NotImplementedException("Not implemented PJL command");
+            _log.Error("Not implemented PJL command");
+            return false;
         }
 
         private void Send(Socket handler, string data)
@@ -198,9 +196,6 @@ namespace VirtualJetDirectServer
                 // Complete sending the data to the remote device.  
                 int bytesSent = handler.EndSend(ar);
                 _log.Trace($"Sent {bytesSent} bytes to client.");
-
-                //handler.Shutdown(SocketShutdown.Both);
-                //handler.Close();
             }
             catch (Exception ex)
             {
@@ -222,8 +217,6 @@ namespace VirtualJetDirectServer
             public Socket WorkSocket { get; set; } = null;
             // Receive buffer.  
             public byte[] Buffer { get; set; } = new byte[BufferSize];
-            // flag to indicate that when receiving valid data
-            public bool StartReceivingData { get; set; } = false;
             // Received data string.  
             public StringBuilder Data { get; set; } = new StringBuilder();
             #endregion
