@@ -110,15 +110,13 @@ namespace VirtualJetDirectServer
 
             _log.Trace($"Data readed ({bytesRead} bytes): {Encoding.ASCII.GetString(state.Buffer, 0, bytesRead)}");
 
-            string dataReceived = Encoding.ASCII.GetString(state.Buffer, 0, bytesRead);
-
-            if (state.StartReceivingData)
+            if(state.StartReceivingData)
                 // we previously received the command that indicate a new print job 
                 // append these data until receiving end of job (EOJ) command
-                state.Data.Append(dataReceived);
+                state.Data.Append(Encoding.ASCII.GetString(state.Buffer, 0, state.Buffer.Length));
 
             // check command if reading must continue
-            if (!CheckCommand(state, dataReceived)) return;
+            if (!CheckCommand(state)) return;
 
             // client is disconnected
             if (!handler.Connected) return;
@@ -142,7 +140,7 @@ namespace VirtualJetDirectServer
             }
         }
 
-        private bool CheckCommand(StateObject state, string currentContent)
+        private bool CheckCommand(StateObject state)
         {
             /* 
              * Check the content for PJL command:
@@ -152,11 +150,12 @@ namespace VirtualJetDirectServer
              * 
              * Update 20200123: removing check on <ESC>%-12345X because this information can be received on 2 differents buffer
              */
+            string currentContent = Encoding.ASCII.GetString(state.Buffer, 0, state.Buffer.Length);
             if (!currentContent.Contains("@PJL")) return true; // no JPL command
             if (currentContent.Contains("@PJL JOB")) // print job
             {
                 state.Data = new StringBuilder(); // clear data
-                state.Data.Append(currentContent); // add data
+                state.Data.Append(Encoding.ASCII.GetString(state.Buffer, 0, state.Buffer.Length)); // add data
                 state.StartReceivingData = true;
                 return true; // print job
             }
