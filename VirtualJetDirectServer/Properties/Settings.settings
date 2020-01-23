@@ -9,7 +9,7 @@
       <Value Profile="(Default)">9100</Value>
     </Setting>
     <Setting Name="LogFile" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\Dev\logs\RawPrintServer.log</Value>
+      <Value Profile="(Default)">C:\Dev\logs\RawPrintServer-${shortdate}.log</Value>
     </Setting>
     <Setting Name="OutputDir" Type="System.String" Scope="Application">
       <Value Profile="(Default)">c:\Temp\RawPrintServer</Value>

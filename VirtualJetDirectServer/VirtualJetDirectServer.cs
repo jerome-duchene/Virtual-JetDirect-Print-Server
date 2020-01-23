@@ -31,9 +31,9 @@ namespace VirtualJetDirectServer
         #region Public method
         public void Start()
         {
-            _log.Trace("Create a print server on port 9100");
+            _log.Info("Create a print server on port 9100");
             _printServerSocket.Start();
-            _log.Trace("Print server started");
+            _log.Info("Print server started");
 
             while (!_stopServer)
             {
@@ -61,7 +61,7 @@ namespace VirtualJetDirectServer
             _stopServer = true;
             Thread.Sleep(500);
             _printServerSocket.Stop();
-            _log.Trace("Print server stopped.");
+            _log.Info("Print server stopped.");
         }
         #endregion
 
@@ -79,7 +79,7 @@ namespace VirtualJetDirectServer
             // Get the socket that handles the client request.  
             Socket handler = listener.EndAcceptSocket(ar);
 
-            _log.Trace($"New connection from: {handler.RemoteEndPoint}");
+            _log.Info($"New connection from: {handler.RemoteEndPoint}");
 
             // Create the state object.  
             StateObject state = new StateObject();
@@ -110,11 +110,10 @@ namespace VirtualJetDirectServer
 
             _log.Trace($"Data readed ({bytesRead} bytes): {Encoding.ASCII.GetString(state.Buffer, 0, bytesRead)}");
 
-            // There might be more data, so store the data received so far.  
-            state.Data.Append(Encoding.ASCII.GetString(
-                state.Buffer, 0, bytesRead));
-
-            string content = state.Data.ToString();
+            if(state.StartReceivingData)
+                // we previously received the command that indicate a new print job 
+                // append these data until receiving end of job (EOJ) command
+                state.Data.Append(Encoding.ASCII.GetString(state.Buffer, 0, state.Buffer.Length));
 
             // check command if reading must continue
             if (!CheckCommand(state)) return;
@@ -148,20 +147,28 @@ namespace VirtualJetDirectServer
              * <ESC>%-12345X@PJL INFO STATUS > return an ack like @PJL INFO STATUS CODE=10001 ONLINE=TRUE
              * <ESC>%-12345X@PJL JOB ... > RAW data to print until receive @PJL EOJ or socket closed
              * <ESC>%-12345X@PJL EOJ > no more data to print
+             * 
+             * Update 20200123: removing check on <ESC>%-12345X because this information can be received on 2 differents buffer
              */
             string currentContent = Encoding.ASCII.GetString(state.Buffer, 0, state.Buffer.Length);
-            if (!currentContent.Contains("\u001B%-12345X@PJL")) return true; // not a JPL command
-            if (currentContent.Contains("@PJL JOB")) return true; // print job
+            if (!currentContent.Contains("@PJL")) return true; // no JPL command
+            if (currentContent.Contains("@PJL JOB")) // print job
+            {
+                state.Data = new StringBuilder(); // clear data
+                state.Data.Append(Encoding.ASCII.GetString(state.Buffer, 0, state.Buffer.Length)); // add data
+                state.StartReceivingData = true;
+                return true; // print job
+            }
             if (currentContent.Contains("@PJL INFO STATUS")) // info request
             {
-                _log.Trace("Received a status request, send OK status");
+                _log.Info("Received a status request, send OK status");
                 Send(state.WorkSocket, "@PJL INFO STATUS CODE=10001 ONLINE=TRUE");
                 return true; 
             }
             if (currentContent.Contains("@PJL EOJ"))
             {
                 // end of print
-                _log.Trace("End of Job");
+                _log.Info("End of Job");
                 OnNewJob?.Invoke(state.Data);
                 return false; 
             }
@@ -211,10 +218,12 @@ namespace VirtualJetDirectServer
             #endregion
 
             #region Public properties
-            // Client  socket.  
+            // Client socket.  
             public Socket WorkSocket { get; set; } = null;
             // Receive buffer.  
             public byte[] Buffer { get; set; } = new byte[BufferSize];
+            // flag to indicate that when receiving valid data
+            public bool StartReceivingData { get; set; } = false;
             // Received data string.  
             public StringBuilder Data { get; set; } = new StringBuilder();
             #endregion

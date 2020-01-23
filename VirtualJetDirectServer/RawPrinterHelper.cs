@@ -225,8 +225,7 @@ namespace VirtualJetDirectServer
                 Marshal.FreeCoTaskMem(pBytes);
             }
         }
-
-
+        
         public static PRINTER_INFO_2[] EnumPrinters(PrinterEnumFlags Flags)
         {
             uint cbNeeded = 0;

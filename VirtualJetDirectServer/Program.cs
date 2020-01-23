@@ -35,8 +35,6 @@ namespace VirtualJetDirectServer
             config.AddRuleForAllLevels(consoleTarget);
             NLog.LogManager.Configuration = config;
 
-            _log.Trace($"Log saved at: {Properties.Settings.Default.LogFile}");
-
             // if we call the program from command line or Windows
             if(Environment.UserInteractive)
             {
