@@ -27,6 +27,7 @@ namespace VirtualJetDirectServer
 
             // bind the event for managing a new job to print
             _printServer.OnNewJob += PrintServer_OnNewJob;
+            _printServer.OnClientDisconnected += _printServer_OnClientDisconnected;
         }
         #endregion
 
@@ -81,6 +82,17 @@ namespace VirtualJetDirectServer
         private void PrintServer_OnNewJob(StringBuilder document)
         {
             _log.Info("[Service] New job to print");
+            PrintDocument(document);
+        }
+
+        private void _printServer_OnClientDisconnected(StringBuilder document)
+        {
+            _log.Warn("[Service] Client disconnected, try to print current data");
+            PrintDocument(document);
+        }
+
+        private void PrintDocument(StringBuilder document)
+        {
             string jobName = "Untitled document";
             string content = document.ToString();
 
@@ -92,7 +104,7 @@ namespace VirtualJetDirectServer
                 searchPattern = "@PJL SET JOBNAME";
             if (content.Contains("@PJL JOB NAME")) // name set by command
                 searchPattern = "@PJL JOB NAME";
-            if(!string.IsNullOrEmpty(searchPattern))
+            if (!string.IsNullOrEmpty(searchPattern))
             {
                 // extract job name
                 if (ExtractDocumentName(content, searchPattern, out extractedName))
