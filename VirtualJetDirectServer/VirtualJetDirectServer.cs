@@ -2,8 +2,11 @@
 using System.Net;  
 using System.Net.Sockets;  
 using System.Text;  
-using System.Threading;  
-  
+using System.Threading;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
 // State object for reading client data asynchronously  
 
 namespace VirtualJetDirectServer
@@ -145,23 +148,19 @@ namespace VirtualJetDirectServer
              * 
              * Update 20200123: a command can be split over multiple buffer, search for command in all data
              */
-            int lastCommandPosition = state.Data.ToString().LastIndexOf("\u001B%-12345X@PJL");
-            if (lastCommandPosition == -1) return true; // no JPL command found
+            List<string> commands = ExtractCommand(state.Data);
+            if (commands == null || commands.Count == 0) return true; // no JPL command found
 
-            string commandData = state.Data.ToString().Substring(lastCommandPosition);
-             if (commandData.Contains("@PJL JOB")) // print job
-            {
-                state.Data = new StringBuilder(commandData); // clear data and add only significant data
-                return true; // continue
-            }
-            if (commandData.Contains("@PJL INFO STATUS")) // info request
+            string lastCommand = commands.Last();
+            if (lastCommand.Contains("JOB") || lastCommand.Contains("ENTER LANGUAGE")) return true; // print job
+            if (lastCommand.Contains("@PJL INFO STATUS")) // info request
             {
                 _log.Info("Received a status request, send OK status");
                 Send(state.WorkSocket, "@PJL INFO STATUS CODE=10001 ONLINE=TRUE");
                 state.Data = new StringBuilder(); // clear data
                 return true; 
             }
-            if (commandData.Contains("@PJL EOJ"))
+            if (lastCommand.Contains("@PJL EOJ"))
             {
                 // end of print
                 _log.Info("End of Job");
@@ -172,6 +171,18 @@ namespace VirtualJetDirectServer
 
             _log.Error("Not implemented PJL command");
             return false;
+        }
+
+        private List<string> ExtractCommand(StringBuilder data)
+        {
+            string pattern = "@PJL (.*)";
+            var found = Regex.Matches(data.ToString(), pattern);
+            if (found.Count == 0) return null;
+            
+            var commands = new List<string>();
+            foreach(Match item in found)
+               commands.Add(item.Value);
+            return commands;
         }
 
         private void Send(Socket handler, string data)
