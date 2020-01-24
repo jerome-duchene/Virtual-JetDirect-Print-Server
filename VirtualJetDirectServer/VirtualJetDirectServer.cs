@@ -86,8 +86,10 @@ namespace VirtualJetDirectServer
             _log.Info($"New connection from: {handler.RemoteEndPoint}");
 
             // Create the state object.  
-            StateObject state = new StateObject();
-            state.WorkSocket = handler;
+            StateObject state = new StateObject
+            {
+                WorkSocket = handler
+            };
             // Start receiving data
             handler.BeginReceive(state.Buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReadPrintJob), state);
         }

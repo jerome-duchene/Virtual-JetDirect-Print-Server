@@ -27,7 +27,7 @@ namespace VirtualJetDirectServer
 
             // bind the event for managing a new job to print
             _printServer.OnNewJob += PrintServer_OnNewJob;
-            _printServer.OnClientDisconnected += _printServer_OnClientDisconnected;
+            _printServer.OnClientDisconnected += PrintServer_OnClientDisconnected;
         }
         #endregion
 
@@ -85,7 +85,7 @@ namespace VirtualJetDirectServer
             PrintDocument(document);
         }
 
-        private void _printServer_OnClientDisconnected(StringBuilder document)
+        private void PrintServer_OnClientDisconnected(StringBuilder document)
         {
             _log.Warn("[Service] Client disconnected, try to print current data");
             PrintDocument(document);
