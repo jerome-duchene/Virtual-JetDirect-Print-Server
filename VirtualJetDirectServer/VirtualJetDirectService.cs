@@ -16,8 +16,8 @@ namespace VirtualJetDirectServer
     partial class VirtualJetDirectService : ServiceBase
     {
         #region Mbers
-        private static NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
-        private VirtualJetDirectServer _printServer = new VirtualJetDirectServer();
+        private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
+        private readonly VirtualJetDirectServer _printServer = new VirtualJetDirectServer();
         #endregion
 
         #region Ctor
@@ -98,8 +98,6 @@ namespace VirtualJetDirectServer
 
             // check if the job have a name
             string searchPattern = null;
-            string extractedName = "";
-
             if (content.Contains("@PJL SET JOBNAME")) // name set by environment variable
                 searchPattern = "@PJL SET JOBNAME";
             if (content.Contains("@PJL JOB NAME")) // name set by command
@@ -107,7 +105,7 @@ namespace VirtualJetDirectServer
             if (!string.IsNullOrEmpty(searchPattern))
             {
                 // extract job name
-                if (ExtractDocumentName(content, searchPattern, out extractedName))
+                if (ExtractDocumentName(content, searchPattern, out string extractedName))
                     jobName = extractedName;
             }
 

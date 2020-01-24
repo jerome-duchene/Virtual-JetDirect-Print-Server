@@ -14,10 +14,10 @@ namespace VirtualJetDirectServer
     public class VirtualJetDirectServer
     {
         #region Mbers
-        private static NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
-        private static ManualResetEvent _allDone = new ManualResetEvent(false);
+        private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly ManualResetEvent _allDone = new ManualResetEvent(false);
         private static bool _stopServer = false;
-        private static TcpListener _printServerSocket = new TcpListener(new IPAddress(0), Properties.Settings.Default.ServerPort);
+        private static readonly TcpListener _printServerSocket = new TcpListener(new IPAddress(0), Properties.Settings.Default.ServerPort);
         #endregion
 
         #region Public event declaration

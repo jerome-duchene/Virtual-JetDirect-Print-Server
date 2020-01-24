@@ -30,9 +30,20 @@ namespace VirtualJetDirectServer
                 Name = "console",
                 DetectConsoleAvailable = true
             };
+            NLog.Targets.Target emailTarget = new NLog.Targets.MailTarget()
+            {
+                SmtpServer = $@"{Properties.Settings.Default.SmtpServer}",
+                //"automailmch.smb.be",
+                SmtpPort = Properties.Settings.Default.SmtpPort,
+                From = $@"{Properties.Settings.Default.MailFrom}",
+                To = $@"{Properties.Settings.Default.MailTo}",
+                Subject = "[Nlog]${level:uppercase=true} in ${logger}",
+                Body = @"Date: ${longdate}${newline}Level: ${level:uppercase=true}${newline}On: ${environment:COMPUTERNAME}${newline}By: ${environment:USERNAME}${newline}From: ${logger}${newline}Message: ${message}${onexception:${newline}EXCEPTION OCCURRED\:${exception:format=type,message,method,stacktrace:maxInnerExceptionLevel=10:innerFormat=shortType,message,method}}"
+            };
             NLog.Config.LoggingConfiguration config = new NLog.Config.LoggingConfiguration();
             config.AddRuleForAllLevels(fileTarget);
             config.AddRuleForAllLevels(consoleTarget);
+            config.AddRule(NLog.LogLevel.Warn, NLog.LogLevel.Fatal, emailTarget);
             NLog.LogManager.Configuration = config;
 
             // if we call the program from command line or Windows

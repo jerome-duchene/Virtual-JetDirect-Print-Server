@@ -14,5 +14,17 @@
     <Setting Name="OutputDir" Type="System.String" Scope="Application">
       <Value Profile="(Default)">c:\Temp\RawPrintServer</Value>
     </Setting>
+    <Setting Name="SmtpServer" Type="System.String" Scope="User">
+      <Value Profile="(Default)">test</Value>
+    </Setting>
+    <Setting Name="SmtpPort" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">25</Value>
+    </Setting>
+    <Setting Name="MailFrom" Type="System.String" Scope="User">
+      <Value Profile="(Default)">from@from.com</Value>
+    </Setting>
+    <Setting Name="MailTo" Type="System.String" Scope="User">
+      <Value Profile="(Default)">from@from.com;jerome@j-it.be</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
