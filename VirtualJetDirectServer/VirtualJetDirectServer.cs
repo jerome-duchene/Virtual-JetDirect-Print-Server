@@ -149,6 +149,7 @@ namespace VirtualJetDirectServer
              * <ESC>%-12345X@PJL EOJ            -> no more data to print
              * 
              * Update 20200123: a command can be split over multiple buffer, search for command in all data
+             * Update 20200131: in some case, I didn't receive the PJL EOJ command, but the data contains %%EOF. Job can be send to the printer
              */
             List<string> commands = ExtractCommand(state.Data);
             if (commands == null || commands.Count == 0) return true; // no JPL command found
@@ -169,6 +170,14 @@ namespace VirtualJetDirectServer
                 OnNewJob?.Invoke(state.Data);
                 state.Data = new StringBuilder(); // clear data
                 return false; 
+            }
+            if(state.Data.ToString().Contains("%%EOF"))
+            {
+                // end of file
+                _log.Info("End of Job");
+                OnNewJob?.Invoke(state.Data);
+                state.Data = new StringBuilder(); // clear data
+                return false;
             }
 
             _log.Error("Not implemented PJL command");

@@ -33,11 +33,11 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 
-[assembly: AssemblyVersion("0.1.2.*")]
+[assembly: AssemblyVersion("0.2.0.*")]
 #if DEBUG
-[assembly: AssemblyInformationalVersion("0.1.2 Beta")]
+[assembly: AssemblyInformationalVersion("0.2.0 Beta")]
 #else
-[assembly: AssemblyInformationalVersion("0.1.2 RC")]
+[assembly: AssemblyInformationalVersion("0.2.0 RC")]
 #endif
 /*
  * Version  Date        Who                     Comment
@@ -45,4 +45,5 @@ using System.Runtime.InteropServices;
  * 0.1.0                Jérôme Duchêne          First release: upgrade of the project RawPrintServer 1.0.0 made in C++
  * 0.1.1    04Nov2019   Jérôme Duchêne          Bug: windows service still in starting mode, embedded OnStart code in a new thread
  * 0.1.2    23Jan2020   Jérôme Duchêne          Bug: it can happen that the PJL command was split on buffer (in this case, the EOJ wasn't detected)
+ * 0.2.0    31Jan2020   Jérôme Duchêne          Adding new case for the end of job detection
  */
