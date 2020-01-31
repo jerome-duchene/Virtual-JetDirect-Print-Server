@@ -147,15 +147,26 @@ namespace VirtualJetDirectServer
              * <ESC>%-12345X@PJL INFO STATUS    -> return an ack like @PJL INFO STATUS CODE=10001 ONLINE=TRUE
              * <ESC>%-12345X@PJL JOB ...        -> RAW data to print until receive @PJL EOJ or socket closed
              * <ESC>%-12345X@PJL EOJ            -> no more data to print
+             * @PJL ENTER LAN                   -> ignore it
              * 
              * Update 20200123: a command can be split over multiple buffer, search for command in all data
              * Update 20200131: in some case, I didn't receive the PJL EOJ command, but the data contains %%EOF. Job can be send to the printer
              */
+
+            if (state.Data.ToString().Contains("%%EOF"))
+            {
+                // end of file
+                _log.Info("End of Job");
+                OnNewJob?.Invoke(state.Data);
+                state.Data = new StringBuilder(); // clear data
+                return false;
+            }
+
             List<string> commands = ExtractCommand(state.Data);
             if (commands == null || commands.Count == 0) return true; // no JPL command found
 
             string lastCommand = commands.Last();
-            if (lastCommand.Contains("JOB") || lastCommand.Contains("ENTER LANGUAGE")) return true; // print job
+            if (lastCommand.Contains("JOB") || lastCommand.Contains("ENTER LANGUAGE") || lastCommand.Contains("ENTER LAN")) return true; // print job
             if (lastCommand.Contains("@PJL INFO STATUS")) // info request
             {
                 _log.Info("Received a status request, send OK status");
@@ -171,15 +182,7 @@ namespace VirtualJetDirectServer
                 state.Data = new StringBuilder(); // clear data
                 return false; 
             }
-            if(state.Data.ToString().Contains("%%EOF"))
-            {
-                // end of file
-                _log.Info("End of Job");
-                OnNewJob?.Invoke(state.Data);
-                state.Data = new StringBuilder(); // clear data
-                return false;
-            }
-
+ 
             _log.Error("Not implemented PJL command");
             return false;
         }
