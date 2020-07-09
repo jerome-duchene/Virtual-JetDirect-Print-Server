@@ -166,7 +166,7 @@ namespace VirtualJetDirectServer
             if (commands == null || commands.Count == 0) return true; // no JPL command found
 
             string lastCommand = commands.Last();
-            if (lastCommand.Contains("JOB") || lastCommand.Contains("ENTER LANGUAGE") || lastCommand.Contains("ENTER LAN")) return true; // print job
+            if (lastCommand.Contains("JOB") || lastCommand.Contains("ENTER")) return true; // print job
             if (lastCommand.Contains("@PJL INFO STATUS")) // info request
             {
                 _log.Info("Received a status request, send OK status");
