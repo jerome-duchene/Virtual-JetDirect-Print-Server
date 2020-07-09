@@ -33,11 +33,11 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 
-[assembly: AssemblyVersion("0.2.0.*")]
+[assembly: AssemblyVersion("0.2.1.*")]
 #if DEBUG
 [assembly: AssemblyInformationalVersion("0.2.0 Beta")]
 #else
-[assembly: AssemblyInformationalVersion("0.2.0 RC")]
+[assembly: AssemblyInformationalVersion("0.2.1 RC")]
 #endif
 /*
  * Version  Date        Who                     Comment
