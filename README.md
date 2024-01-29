@@ -12,7 +12,7 @@ Dependances:
 Usage:
 Execute the application with a command line interface.
 
-- VirtualJetDirectServer.exe install: Deploy the application as a Windows services (asked creadential during installation process)
+- VirtualJetDirectServer.exe install: Deploy the application as a Windows services (request creadential during installation process)
 - VirtualJetDirectServer.exe uninstall: Remove the application from the Windows services
 - VirtualJetDirectServer.exe standalone: Run the application in the command line
 
