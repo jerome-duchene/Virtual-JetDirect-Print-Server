@@ -12,9 +12,9 @@ Dependances:
 Usage:
 Execute the application with a command line interface.
 
-VirtualJetDirectServer.exe install: Deploy the application as a Windows services (asked creadential during installation process)
-VirtualJetDirectServer.exe uninstall: Remove the application from the Windows services
-VirtualJetDirectServer.exe standalone: Run the application in the command line
+- VirtualJetDirectServer.exe install: Deploy the application as a Windows services (asked creadential during installation process)
+- VirtualJetDirectServer.exe uninstall: Remove the application from the Windows services
+- VirtualJetDirectServer.exe standalone: Run the application in the command line
 
 Edit VirtualJetDirectServer.exe.config to change parameters:
 - PrinterName: Name or network path of the printer to use
